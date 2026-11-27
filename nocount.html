@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lucettina — visit counting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..600&family=Lobster&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Owner-only utility page: reuses the hero layout, full viewport height. */
+  .hero { height: auto; min-height: 100vh; min-height: 100svh; }
+  .hero-copy { max-width: 34em; padding-right: 6vw; }
+  .hero-copy p { text-wrap: pretty; }
+  button.btn { border: 0; font-family: inherit; cursor: pointer; }
+  .back { display: inline-block; margin-left: 1.4em; font-size: var(--fs-btn); color: var(--muted); }
+  .back:hover { color: var(--ink); }
+  @media (max-width: 720px) {
+    .hero { padding-bottom: 48px; }
+    .hero-copy { padding-right: 0; }
+  }
+</style>
+<!-- No analytics script on this page on purpose: opening it is never counted. -->
+</head>
+<body>
+
+<main class="hero">
+  <a class="logo" href="/" aria-label="Lucettina home">Lucettina</a>
+
+  <div class="hero-copy">
+    <h1 id="status">Switching off visit counting…</h1>
+    <p id="detail">This page needs JavaScript to work.</p>
+    <button class="btn" id="toggle" type="button" hidden></button>
+    <a class="back" href="/">Go to the site</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  // Plausible skips every event from a browser that has this flag set.
+  var KEY = 'plausible_ignore';
+  var statusEl = document.getElementById('status');
+  var detailEl = document.getElementById('detail');
+  var toggleEl = document.getElementById('toggle');
+
+  function isOff() {
+    try { return localStorage.getItem(KEY) === 'true'; } catch (e) { return null; }
+  }
+
+  function setOff(off) {
+    try {
+      if (off) localStorage.setItem(KEY, 'true');
+      else localStorage.removeItem(KEY);
+    } catch (e) { /* storage blocked; render() reports it */ }
+  }
+
+  function render(wantOff) {
+    var off = isOff();
+    if (off === null || off !== wantOff) {
+      statusEl.textContent = 'Couldn’t change counting in this browser';
+      detailEl.textContent = 'This browser is blocking saved settings, which is common in private windows. Open this page in a normal window and it will work.';
+      toggleEl.hidden = true;
+      return;
+    }
+    if (off) {
+      statusEl.textContent = 'Visits from this browser are not counted';
+      detailEl.textContent = 'This applies to this browser on this device only. Open this page once in every other browser you use. Clearing site data undoes it.';
+      toggleEl.textContent = 'Count this browser again';
+    } else {
+      statusEl.textContent = 'Visits from this browser are counted';
+      detailEl.textContent = 'Your visits to lucettina.com show up in the stats like anyone else’s.';
+      toggleEl.textContent = 'Stop counting this browser';
+    }
+    toggleEl.hidden = false;
+  }
+
+  toggleEl.addEventListener('click', function () {
+    var next = !isOff();
+    setOff(next);
+    render(next);
+  });
+
+  // Opening the page is the switch: turn counting off straight away.
+  setOff(true);
+  render(true);
+})();
+</script>
+
+</body>
+</html>
